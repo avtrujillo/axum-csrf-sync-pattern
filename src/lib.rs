@@ -316,7 +316,10 @@ impl CsrfLayer {
 
     async fn regenerate_token(&self, session: &Session) -> Result<String, Error> {
         let mut buf = [0; 32];
-        rand::thread_rng().try_fill_bytes(&mut buf)?;
+        rand::thread_rng().try_fill_bytes(&mut buf).map_err(|e| {
+            eprintln!("Error regenerating token: {}", &e);
+            e
+        })?;
         let token = BASE64_STANDARD.encode(buf);
         session.insert(self.session_key, &token).await?;
 
@@ -328,7 +331,10 @@ impl CsrfLayer {
             self.response_header,
             match HeaderValue::from_str(server_token).map_err(Error::from) {
                 Ok(token_header) => token_header,
-                Err(error) => return error.into_response(),
+                Err(error) => {
+                    eprintln!("error in response-with_token: {}", &error);
+                    return error.into_response()
+                },
             },
         );
         response
@@ -468,7 +474,10 @@ where
                 .ok_or(Error::SessionLayerMissing)
             {
                 Ok(session_handle) => session_handle,
-                Err(error) => return Ok(error.into_response()),
+                Err(error) => {
+                    eprintln!("Session layer missing");
+                    return Ok(error.into_response())
+                },
             };
 
             // Extract the CSRF server side token from the session; create a new one if none has been set yet.
@@ -504,6 +513,7 @@ where
                 let client_token = match client_token.to_str().map_err(Error::from) {
                     Ok(token) => token,
                     Err(error) => {
+                        eprintln!("Error getting client token: {}", &error);
                         return Ok(layer.response_with_token(error.into_response(), &server_token))
                     }
                 };
