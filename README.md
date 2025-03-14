@@ -30,7 +30,7 @@ This middleware implements token transfer via [custom request headers](https://c
 
 The middleware requires and is built upon [`tower_sessions`](https://docs.rs/tower-sessions/).
 
-The current version is built for and works with `axum 0.7.x`, `tower-sessions 0.9.x`.
+The current version is built for and works with `axum 0.8.x`, `tower-sessions 0.14.x`.
 
 The [Same Origin Policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy) prevents the custom request header to be set by foreign scripts.
 
