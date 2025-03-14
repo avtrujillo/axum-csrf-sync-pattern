@@ -239,7 +239,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use base64::prelude::*;
-use rand::RngCore;
+use rand::TryRngCore;
 use tower_layer::Layer;
 use tower_sessions::Session;
 
@@ -316,7 +316,7 @@ impl CsrfLayer {
 
     async fn regenerate_token(&self, session: &Session) -> Result<String, Error> {
         let mut buf = [0; 32];
-        rand::thread_rng().try_fill_bytes(&mut buf)?;
+        let _: Result<(), Infallible> = rand::rng().try_fill_bytes(&mut buf);
         let token = BASE64_STANDARD.encode(buf);
         session.insert(self.session_key, &token).await?;
 
@@ -375,9 +375,6 @@ pub enum RegenerateToken {
 
 #[derive(thiserror::Error, Debug)]
 enum Error {
-    #[error("Random number generator error")]
-    Rng(#[from] rand::Error),
-
     #[error("Session error")]
     Session(#[from] tower_sessions::session::Error),
 
