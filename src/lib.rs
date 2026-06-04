@@ -239,7 +239,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use base64::prelude::*;
-use rand::TryRngCore;
+use rand::TryRng;
 use tower_layer::Layer;
 use tower_sessions::Session;
 
